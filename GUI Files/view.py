@@ -100,8 +100,25 @@ class View(tk.Frame):
                                          fg_color='transparent')
         self.upload_history_frame.grid(row=0, column=1, rowspan=3, sticky='nsew', padx=(20,0))
 
+        self.upload_history_frame.grid_columnconfigure(0, weight=1)
+        self.upload_history_frame.grid_columnconfigure(1, weight=0)
+        self.upload_history_frame.grid_columnconfigure(2, weight=0)
+        self.upload_history_frame.grid_columnconfigure(3, weight=0)
+
         self.label = ttk.Label(self.upload_history_frame, text='Upload History', font=(globalFont, 14))
-        self.label.grid(row=0, column=0, sticky='w', padx=10, pady=10)
+        self.label.grid(row=0, column=0, sticky='w', padx=10, pady=(10, 0))
+
+        self.label = ttk.Label(self.upload_history_frame, text='File Name', font=(globalFont, 10))
+        self.label.grid(row=1, column=0, sticky='nsew', padx=(20,0), pady=(5,0))
+
+        self.label = ttk.Label(self.upload_history_frame, text='Start Time', font=(globalFont, 10))
+        self.label.grid(row=1, column=1, sticky='w', padx=(0,20), pady=(5,0))
+
+        self.label = ttk.Label(self.upload_history_frame, text='Complete Time', font=(globalFont, 10))
+        self.label.grid(row=1, column=2, sticky='w', padx=(0,20), pady=(5,0))
+
+        self.label = ttk.Label(self.upload_history_frame, text='Status', font=(globalFont, 10))
+        self.label.grid(row=1, column=3, sticky='w', padx=(0,20), pady=(5,0))
 
         """Download Widgets Frame"""
         self.download_frame = ctk.CTkFrame(parent, fg_color='transparent')
@@ -156,8 +173,25 @@ class View(tk.Frame):
                                          fg_color='transparent')
         self.download_history_frame.grid(row=0, column=1, rowspan=3, sticky='nsew', padx=(0,20))
 
+        self.download_history_frame.grid_columnconfigure(0, weight=1)
+        self.download_history_frame.grid_columnconfigure(1, weight=0)
+        self.download_history_frame.grid_columnconfigure(2, weight=0)
+        self.download_history_frame.grid_columnconfigure(3, weight=0)
+
         self.label = ttk.Label(self.download_history_frame, text='Download History', font=(globalFont, 14))
-        self.label.grid(row=0, column=0, sticky='w', padx=10, pady=10)
+        self.label.grid(row=0, column=0, sticky='w', padx=10, pady=(10,0))
+
+        self.label = ttk.Label(self.download_history_frame, text='File Name', font=(globalFont, 10))
+        self.label.grid(row=1, column=0, sticky='nsew', padx=(20, 0), pady=(5, 0))
+
+        self.label = ttk.Label(self.download_history_frame, text='Start Time', font=(globalFont, 10))
+        self.label.grid(row=1, column=1, sticky='w', padx=(0, 20), pady=(5, 0))
+
+        self.label = ttk.Label(self.download_history_frame, text='Complete Time', font=(globalFont, 10))
+        self.label.grid(row=1, column=2, sticky='w', padx=(0, 20), pady=(5, 0))
+
+        self.label = ttk.Label(self.download_history_frame, text='Status', font=(globalFont, 10))
+        self.label.grid(row=1, column=3, sticky='w', padx=(0, 20), pady=(5, 0))
 
 
         # Initialize the controller to None
