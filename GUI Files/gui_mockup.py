@@ -20,6 +20,7 @@ class App(tk.Tk):
         controller = Controller(model, view)
 
         self.geometry("860x760")
+        self.resizable(False,False)
         view.grid(sticky='nsew')
 
         self.attributes('-alpha', 0.0)

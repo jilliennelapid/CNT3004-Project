@@ -1,6 +1,6 @@
 import tkinter as tk
 import customtkinter as ctk
-from tkinter import ttk, font
+from tkinter import ttk, font, filedialog
 
 class View(tk.Frame):
     def __init__(self, parent):
@@ -25,11 +25,11 @@ class View(tk.Frame):
         self.top_frame_left = ctk.CTkFrame(self.window_frame, fg_color='transparent')
         self.top_frame_left.grid(row=0, column=0, sticky='w', padx=10)
 
-        self.label = ttk.Label(self.top_frame_left, text='File Share', font=(globalFont, 30, 'bold'))
-        self.label.grid(row=0, column=0, sticky='w', padx=20, pady=10)
+        self.label_FS = ttk.Label(self.top_frame_left, text='File Share', font=(globalFont, 30, 'bold'))
+        self.label_FS.grid(row=0, column=0, sticky='w', padx=20, pady=10)
 
-        self.label = ttk.Label(self.top_frame_left, text='Server Connection Status', font=(globalFont, 11))
-        self.label.grid(row=2, column=0, sticky='w', padx=20)
+        self.label_SCS = ttk.Label(self.top_frame_left, text='Server Connection Status', font=(globalFont, 11))
+        self.label_SCS.grid(row=2, column=0, sticky='w', padx=20)
 
 
         """Top Right Frame"""
@@ -56,7 +56,8 @@ class View(tk.Frame):
 
         self.server_dir_button = ctk.CTkButton(self.upload_frame, corner_radius=5, text='Upload File',
                                                font=(globalFont, 25, 'bold'), fg_color='#59b1f0', hover_color='#3977e3',
-                                               text_color='#fafcff', border_spacing=10, width=270, height=60)
+                                               text_color='#fafcff', border_spacing=10, width=270, height=60,
+                                               command=self.open_file_dialog)
 
         self.server_dir_button.grid(row=0, column=0, sticky='w')
 
@@ -66,34 +67,34 @@ class View(tk.Frame):
         self.upload_current_frame.grid_propagate(False)
         self.upload_current_frame.grid(row=1, column=0, rowspan=2, sticky='nsew', pady=(20, 0))
 
-        self.label = ttk.Label(self.upload_current_frame, text='Current Upload Statistics', font=(globalFont, 12, 'bold'))
-        self.label.grid(row=0, column=0, sticky='w', padx=10, pady=10)
+        self.label_US = ttk.Label(self.upload_current_frame, text='Current Upload Statistics', font=(globalFont, 12, 'bold'))
+        self.label_US.grid(row=0, column=0, sticky='w', padx=10, pady=10)
 
         ### Upload Statistics Labels
-        self.label = ttk.Label(self.upload_current_frame, text='File Name', font=(globalFont, 11))
-        self.label.grid(row=1, column=0, sticky='w', padx=20, pady=7)
+        self.label_US_FN = ttk.Label(self.upload_current_frame, text='File Name', font=(globalFont, 11))
+        self.label_US_FN.grid(row=1, column=0, sticky='w', padx=20, pady=7)
 
-        self.label = ttk.Label(self.upload_current_frame, text='Upload Data Rate', font=(globalFont, 11))
-        self.label.grid(row=2, column=0, sticky='w', padx=20, pady=7)
+        self.label_US_UDR = ttk.Label(self.upload_current_frame, text='Upload Data Rate', font=(globalFont, 11))
+        self.label_US_UDR.grid(row=2, column=0, sticky='w', padx=20, pady=7)
 
-        self.label = ttk.Label(self.upload_current_frame, text='File Upload Time', font=(globalFont, 11))
-        self.label.grid(row=3, column=0, sticky='w', padx=20, pady=7)
+        self.label_US_FUT = ttk.Label(self.upload_current_frame, text='File Upload Time', font=(globalFont, 11))
+        self.label_US_FUT.grid(row=3, column=0, sticky='w', padx=20, pady=7)
 
-        self.label = ttk.Label(self.upload_current_frame, text='System Response Time', font=(globalFont, 11))
-        self.label.grid(row=4, column=0, sticky='w', padx=20, pady=7)
+        self.label_US_SRT = ttk.Label(self.upload_current_frame, text='System Response Time', font=(globalFont, 11))
+        self.label_US_SRT.grid(row=4, column=0, sticky='w', padx=20, pady=7)
 
         ### Upload Statistics Values
-        self.label = ttk.Label(self.upload_current_frame, text='-', font=(globalFont, 11, 'bold'))
-        self.label.grid(row=1, column=1, sticky='e', padx=20, pady=7)
+        self.label_US_FN_val = ttk.Label(self.upload_current_frame, text='-', font=(globalFont, 11, 'bold'))
+        self.label_US_FN_val.grid(row=1, column=1, sticky='e', padx=20, pady=7)
 
-        self.label = ttk.Label(self.upload_current_frame, text='-', font=(globalFont, 11, 'bold'))
-        self.label.grid(row=2, column=1, sticky='e', padx=20, pady=7)
+        self.label_US_UDR_val = ttk.Label(self.upload_current_frame, text='-', font=(globalFont, 11, 'bold'))
+        self.label_US_UDR_val.grid(row=2, column=1, sticky='e', padx=20, pady=7)
 
-        self.label = ttk.Label(self.upload_current_frame, text='-', font=(globalFont, 11, 'bold'))
-        self.label.grid(row=3, column=1, sticky='e', padx=20, pady=7)
+        self.label_US_FUT_val = ttk.Label(self.upload_current_frame, text='-', font=(globalFont, 11, 'bold'))
+        self.label_US_FUT_val.grid(row=3, column=1, sticky='e', padx=20, pady=7)
 
-        self.label = ttk.Label(self.upload_current_frame, text='-', font=(globalFont, 11, 'bold'))
-        self.label.grid(row=4, column=1, sticky='e', padx=20, pady=7)
+        self.label_US_SRT_val = ttk.Label(self.upload_current_frame, text='-', font=(globalFont, 11, 'bold'))
+        self.label_US_SRT_val.grid(row=4, column=1, sticky='e', padx=20, pady=7)
 
         ## Upload History Box (Frame)
         self.upload_history_frame = ctk.CTkFrame(self.upload_frame, border_width=2, width=230, border_color='#59b1f0',
@@ -105,20 +106,21 @@ class View(tk.Frame):
         self.upload_history_frame.grid_columnconfigure(2, weight=0)
         self.upload_history_frame.grid_columnconfigure(3, weight=0)
 
-        self.label = ttk.Label(self.upload_history_frame, text='Upload History', font=(globalFont, 14))
-        self.label.grid(row=0, column=0, sticky='w', padx=10, pady=(10, 0))
+        self.label_UH = ttk.Label(self.upload_history_frame, text='Upload History', font=(globalFont, 14))
+        #self.label_UH.bind("<Button-1", #)
+        self.label_UH.grid(row=0, column=0, sticky='w', padx=10, pady=(10, 0))
 
-        self.label = ttk.Label(self.upload_history_frame, text='File Name', font=(globalFont, 10))
-        self.label.grid(row=1, column=0, sticky='nsew', padx=(20,0), pady=(5,0))
+        self.label_UH_FN = ttk.Label(self.upload_history_frame, text='File Name', font=(globalFont, 10))
+        self.label_UH_FN.grid(row=1, column=0, sticky='nsew', padx=(20,0), pady=(5,0))
 
-        self.label = ttk.Label(self.upload_history_frame, text='Start Time', font=(globalFont, 10))
-        self.label.grid(row=1, column=1, sticky='w', padx=(0,20), pady=(5,0))
+        self.label_UH_ST = ttk.Label(self.upload_history_frame, text='Start Time', font=(globalFont, 10))
+        self.label_UH_ST.grid(row=1, column=1, sticky='w', padx=(0,20), pady=(5,0))
 
-        self.label = ttk.Label(self.upload_history_frame, text='Complete Time', font=(globalFont, 10))
-        self.label.grid(row=1, column=2, sticky='w', padx=(0,20), pady=(5,0))
+        self.label_UH_CT = ttk.Label(self.upload_history_frame, text='Complete Time', font=(globalFont, 10))
+        self.label_UH_CT.grid(row=1, column=2, sticky='w', padx=(0,20), pady=(5,0))
 
-        self.label = ttk.Label(self.upload_history_frame, text='Status', font=(globalFont, 10))
-        self.label.grid(row=1, column=3, sticky='w', padx=(0,20), pady=(5,0))
+        self.label_UH_status = ttk.Label(self.upload_history_frame, text='Status', font=(globalFont, 10))
+        self.label_UH_status.grid(row=1, column=3, sticky='w', padx=(0,20), pady=(5,0))
 
         """Download Widgets Frame"""
         self.download_frame = ctk.CTkFrame(parent, fg_color='transparent')
@@ -139,34 +141,34 @@ class View(tk.Frame):
         self.download_current_frame.grid_propagate(False)
         self.download_current_frame.grid(row=2, column=0, sticky='nsew', padx=20, pady=(20, 0))
 
-        self.label = ttk.Label(self.download_current_frame, text='Current Download Statistics', font=(globalFont, 12, 'bold'))
-        self.label.grid(row=0, column=0, sticky='w', padx=10, pady=10)
+        self.label_DS = ttk.Label(self.download_current_frame, text='Current Download Statistics', font=(globalFont, 12, 'bold'))
+        self.label_DS.grid(row=0, column=0, sticky='w', padx=10, pady=10)
 
         ### Download Statistics Labels
-        self.label = ttk.Label(self.download_current_frame, text='File Name', font=(globalFont, 11))
-        self.label.grid(row=1, column=0, sticky='w', padx=20, pady=7)
+        self.label_DS_FN = ttk.Label(self.download_current_frame, text='File Name', font=(globalFont, 11))
+        self.label_DS_FN.grid(row=1, column=0, sticky='w', padx=20, pady=7)
 
-        self.label = ttk.Label(self.download_current_frame, text='Download Data Rate', font=(globalFont, 11))
-        self.label.grid(row=2, column=0, sticky='w', padx=20, pady=7)
+        self.label_DS_DDR = ttk.Label(self.download_current_frame, text='Download Data Rate', font=(globalFont, 11))
+        self.label_DS_DDR.grid(row=2, column=0, sticky='w', padx=20, pady=7)
 
-        self.label = ttk.Label(self.download_current_frame, text='File Download Time', font=(globalFont, 11))
-        self.label.grid(row=3, column=0, sticky='w', padx=20, pady=7)
+        self.label_DS_FDT = ttk.Label(self.download_current_frame, text='File Download Time', font=(globalFont, 11))
+        self.label_DS_FDT.grid(row=3, column=0, sticky='w', padx=20, pady=7)
 
-        self.label = ttk.Label(self.download_current_frame, text='System Response Time', font=(globalFont, 11))
-        self.label.grid(row=4, column=0, sticky='w', padx=20, pady=7)
+        self.label_DS_SRT = ttk.Label(self.download_current_frame, text='System Response Time', font=(globalFont, 11))
+        self.label_DS_SRT.grid(row=4, column=0, sticky='w', padx=20, pady=7)
 
         ### Download Statistics Values
-        self.label = ttk.Label(self.download_current_frame, text='-', font=(globalFont, 11, 'bold'))
-        self.label.grid(row=1, column=1, sticky='e', padx=(0,30), pady=7)
+        self.label_DS_FN_val = ttk.Label(self.download_current_frame, text='-', font=(globalFont, 11, 'bold'))
+        self.label_DS_FN_val.grid(row=1, column=1, sticky='e', padx=(0,30), pady=7)
 
-        self.label = ttk.Label(self.download_current_frame, text='-', font=(globalFont, 11, 'bold'))
-        self.label.grid(row=2, column=1, sticky='e', padx=(0,30), pady=7)
+        self.label_DS_DDR_val = ttk.Label(self.download_current_frame, text='-', font=(globalFont, 11, 'bold'))
+        self.label_DS_DDR_val.grid(row=2, column=1, sticky='e', padx=(0,30), pady=7)
 
-        self.label = ttk.Label(self.download_current_frame, text='-', font=(globalFont, 11, 'bold'))
-        self.label.grid(row=3, column=1, sticky='e', padx=(0,30), pady=7)
+        self.label_DS_FDT_val = ttk.Label(self.download_current_frame, text='-', font=(globalFont, 11, 'bold'))
+        self.label_DS_FDT_val.grid(row=3, column=1, sticky='e', padx=(0,30), pady=7)
 
-        self.label = ttk.Label(self.download_current_frame, text='-', font=(globalFont, 11, 'bold'))
-        self.label.grid(row=4, column=1, sticky='e', padx=(0,30), pady=7)
+        self.label_DS_SRT_val = ttk.Label(self.download_current_frame, text='-', font=(globalFont, 11, 'bold'))
+        self.label_DS_SRT_val.grid(row=4, column=1, sticky='e', padx=(0,30), pady=7)
 
         ## Download History Box (Frame)
         self.download_history_frame = ctk.CTkFrame(self.download_frame, border_width=2, width=230, border_color='#59b1f0',
@@ -178,20 +180,20 @@ class View(tk.Frame):
         self.download_history_frame.grid_columnconfigure(2, weight=0)
         self.download_history_frame.grid_columnconfigure(3, weight=0)
 
-        self.label = ttk.Label(self.download_history_frame, text='Download History', font=(globalFont, 14))
-        self.label.grid(row=0, column=0, sticky='w', padx=10, pady=(10,0))
+        self.label_DH = ttk.Label(self.download_history_frame, text='Download History', font=(globalFont, 14))
+        self.label_DH.grid(row=0, column=0, sticky='w', padx=10, pady=(10,0))
 
-        self.label = ttk.Label(self.download_history_frame, text='File Name', font=(globalFont, 10))
-        self.label.grid(row=1, column=0, sticky='nsew', padx=(20, 0), pady=(5, 0))
+        self.label_DH_FN = ttk.Label(self.download_history_frame, text='File Name', font=(globalFont, 10))
+        self.label_DH_FN.grid(row=1, column=0, sticky='nsew', padx=(20, 0), pady=(5, 0))
 
-        self.label = ttk.Label(self.download_history_frame, text='Start Time', font=(globalFont, 10))
-        self.label.grid(row=1, column=1, sticky='w', padx=(0, 20), pady=(5, 0))
+        self.label_DH_ST = ttk.Label(self.download_history_frame, text='Start Time', font=(globalFont, 10))
+        self.label_DH_ST.grid(row=1, column=1, sticky='w', padx=(0, 20), pady=(5, 0))
 
-        self.label = ttk.Label(self.download_history_frame, text='Complete Time', font=(globalFont, 10))
-        self.label.grid(row=1, column=2, sticky='w', padx=(0, 20), pady=(5, 0))
+        self.label_DH_CT = ttk.Label(self.download_history_frame, text='Complete Time', font=(globalFont, 10))
+        self.label_DH_CT.grid(row=1, column=2, sticky='w', padx=(0, 20), pady=(5, 0))
 
-        self.label = ttk.Label(self.download_history_frame, text='Status', font=(globalFont, 10))
-        self.label.grid(row=1, column=3, sticky='w', padx=(0, 20), pady=(5, 0))
+        self.label_DH_status = ttk.Label(self.download_history_frame, text='Status', font=(globalFont, 10))
+        self.label_DH_status.grid(row=1, column=3, sticky='w', padx=(0, 20), pady=(5, 0))
 
 
         # Initialize the controller to None
@@ -201,3 +203,21 @@ class View(tk.Frame):
     def set_controller(self, controller):
         self.controller = controller
 
+    def open_file_dialog(self):
+        filenames = filedialog.askopenfilenames(
+            title="Select a File to Upload to Server",
+            filetypes=(
+                ("Text Files", "*.txt"),
+                ("MP3 Audio Files", "*.mp3"),
+                ("MP4 Video Files", "*.mp4")
+            )
+
+        )
+
+        if filenames:
+            print("Selected files:")
+            for filename in filenames:
+                print(filename)
+
+    def expand_upload_history(self):
+        print("upload history")
