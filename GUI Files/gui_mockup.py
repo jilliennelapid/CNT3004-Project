@@ -3,9 +3,9 @@ from view import View
 from controller import Controller
 
 import tkinter as tk
+import customtkinter as ctk
 
-
-class App(tk.Tk):
+class App(ctk.CTk):
     def __init__(self):
         # Initializes the GUI main window
         super().__init__()
@@ -19,15 +19,16 @@ class App(tk.Tk):
         view = View(self)
         controller = Controller(model, view)
 
-        self.geometry("860x760")
+        self.geometry("860x720")
         self.resizable(False,False)
         view.grid(sticky='nsew')
 
         self.attributes('-alpha', 0.0)
-        self.center_window()
+        #self.center_window()
         self.attributes('-alpha', 1.0)
 
         View.set_controller(view, controller)
+
 
     def center_window(self):
         self.update_idletasks()  # Ensure all widgets are rendered
