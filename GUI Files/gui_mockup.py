@@ -24,7 +24,6 @@ class App(ctk.CTk):
         view.grid(sticky='nsew')
 
         self.attributes('-alpha', 0.0)
-        #self.center_window()
         self.attributes('-alpha', 1.0)
 
         View.set_controller(view, controller)

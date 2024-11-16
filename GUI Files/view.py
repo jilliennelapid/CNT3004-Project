@@ -1,8 +1,10 @@
 import tkinter as tk
 import customtkinter as ctk
-from tkinter import ttk, font, filedialog
+from tkinter import font, filedialog
 
 class View(tk.Frame):
+    task_complete = False
+
     def __init__(self, parent):
         super().__init__(parent)
 
@@ -205,7 +207,12 @@ class View(tk.Frame):
         # Initialize the controller to None
         self.controller = None
 
-        self.create_server_connect_dialog()
+        self.server_connect_window = self.create_server_connect_dialog()
+
+        self.complete_task()
+        # Bind the close button action to our custom function
+        self.server_connect_window.protocol("WM_DELETE_WINDOW", self.on_close)
+
 
     def set_controller(self, controller):
         self.controller = controller
@@ -233,3 +240,21 @@ class View(tk.Frame):
         self.server_connect_window = ctk.CTkToplevel(self)
         self.server_connect_window.geometry("400x300")
         self.server_connect_window.title("Server Connection")
+
+        self.test_label = ctk.CTkLabel(self.server_connect_window, text="Test Window that will display server connection")
+        self.test_label.grid(row=0, column=0)
+
+        return self.server_connect_window
+
+    # Function to override the close button action
+    def on_close(self):
+        if self.task_complete:
+            self.destroy()  # Allow closing if the task is complete
+        else:
+            print("Task not complete. Cannot close yet.")  # Notify user
+
+
+    # Example function to simulate completing a task
+    def complete_task(self):
+        self.task_complete = True
+        print("Task completed! You can now close the window.")
