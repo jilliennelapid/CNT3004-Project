@@ -38,9 +38,9 @@ class Client:
         self.client.send(json.dumps(del_file_mess).encode(FORMAT))
 
     # Sends request to upload file up to the server.
-    def request_upload_file(self, file):
+    def request_upload_file(self, filename, filepath):
         # Opens the file and reads its content in binary
-        with open(f"{file}", 'rb') as f:
+        with open(f"{filepath}", 'rb') as f:
             # Saves the file contents to file_data
             file_data = f.read(BUFFER_SIZE)
 
@@ -48,7 +48,7 @@ class Client:
         enc_file_data = base64.b64encode(file_data).decode('utf-8')
 
         # Dictionary send to server for upload file processing
-        up_file_mess = {"command": "UPLOAD", "filename": file, "filedata": enc_file_data}
+        up_file_mess = {"command": "UPLOAD", "filename": filename, "filedata": enc_file_data}
 
         # Sending the data as JSON over client socket
         self.client.send(json.dumps(up_file_mess).encode(FORMAT))
@@ -61,19 +61,19 @@ class Client:
     def close_client(self):
         self.client.close()
 
-
+"""
 if __name__ == '__main__':
     client_socket = Client()
 
     client_socket.activate_client()
 
-    """
+    
         while True:
              message = input('Enter a message or q for quit: ')
              if message == 'q':
                 quit()
              next(setup_connection())   
-    """
+"""
 
 
 """

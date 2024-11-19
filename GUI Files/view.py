@@ -1,6 +1,7 @@
 import tkinter as tk
 import customtkinter as ctk
 from tkinter import font, filedialog
+import os
 
 class View(tk.Frame):
     task_complete = False
@@ -218,7 +219,7 @@ class View(tk.Frame):
         self.controller = controller
 
     def open_file_dialog(self):
-        filenames = filedialog.askopenfilenames(
+        filepaths = filedialog.askopenfilenames(
             title="Select a File to Upload to Server",
             filetypes=(
                 ("Text Files", "*.txt"),
@@ -228,10 +229,13 @@ class View(tk.Frame):
 
         )
 
-        if filenames:
-            print("Selected files:")
-            for filename in filenames:
-                print(filename)
+        if filepaths and self.controller:
+            for filepath in filepaths:
+                # Get the name of the file
+                name = os.path.basename(filepath)
+
+                # Send the file data to the controller
+                self.controller.upload(name, filepath)
 
     def expand_upload_history(self):
         print("upload history")
