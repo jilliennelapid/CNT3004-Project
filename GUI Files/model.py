@@ -13,3 +13,6 @@ class Model:
     def initiate_upload(self):
         # Sends file name and file path to the client side upload function
         self.client.request_upload_file(self.filename, self.filepath)
+
+    def return_server_status(self):
+        return self.client.activate_client()

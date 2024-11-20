@@ -2,6 +2,8 @@ import tkinter as tk
 import customtkinter as ctk
 from tkinter import font, filedialog
 import os
+import threading
+import time
 
 class View(tk.Frame):
     task_complete = False
@@ -9,9 +11,11 @@ class View(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
 
+        # Initialize the controller to None
+        self.controller = None
+
         """attributes pertaining to the whole window"""
         globalFont = font.Font(family='Helvetica')
-
         parent.grid_rowconfigure(0, weight=1)
         parent.grid_columnconfigure(0, weight=1)
 
@@ -205,14 +209,7 @@ class View(tk.Frame):
         self.label_DH_status = ctk.CTkLabel(self.download_history_frame, text='Status', font=(globalFont, 12))
         self.label_DH_status.grid(row=1, column=3, sticky='w', padx=(0, 20), pady=(5, 0))
 
-        # Initialize the controller to None
-        self.controller = None
-
-        self.server_connect_window = self.create_server_connect_dialog()
-
-        self.complete_task()
-        # Bind the close button action to our custom function
-        self.server_connect_window.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.update_idletasks()
 
 
     def set_controller(self, controller):
@@ -240,25 +237,64 @@ class View(tk.Frame):
     def expand_upload_history(self):
         print("upload history")
 
-    def create_server_connect_dialog(self):
-        self.server_connect_window = ctk.CTkToplevel(self)
+
+class InitView(tk.Frame):
+    task_complete = False
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.controller = None
+
+        # Draw the top level window
+        self.server_connect_window = ctk.CTkToplevel(parent)
         self.server_connect_window.geometry("400x300")
         self.server_connect_window.title("Server Connection")
+        self.server_connect_window.transient()
+        self.server_connect_window.grab_set()
 
-        self.test_label = ctk.CTkLabel(self.server_connect_window, text="Test Window that will display server connection")
-        self.test_label.grid(row=0, column=0)
+        self.server_connect_window.columnconfigure(0, weight=1)
 
-        return self.server_connect_window
+        self.connection_label = ctk.CTkLabel(self.server_connect_window, text="Connecting to Server...", font=('Helvetica', 18))
+        self.connection_label.grid(row=0, column=0, sticky='n', pady=(20,0))
+
+        self.connection_label2 = ctk.CTkLabel(self.server_connect_window, text="",
+                                             font=('Helvetica', 18))
+        self.connection_label2.grid(row=1, column=0, sticky='n', pady=(20, 0))
+
+        # Bind the close button action to our custom function
+        self.server_connect_window.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        self.update_idletasks()
+
+    def set_controller(self, controller):
+        self.controller = controller
 
     # Function to override the close button action
     def on_close(self):
         if self.task_complete:
-            self.destroy()  # Allow closing if the task is complete
+            self.server_connect_window.destroy()  # Allow closing if the task is complete
         else:
+            self.connection_label2.configure(text="Cannot Proceed Yet, Attempting to Connect")
             print("Task not complete. Cannot close yet.")  # Notify user
 
+    import threading
 
-    # Example function to simulate completing a task
-    def complete_task(self):
-        self.task_complete = True
-        print("Task completed! You can now close the window.")
+    def connect_to_server(self):
+        # Run the connection logic in a separate thread
+        threading.Thread(target=self._connect_to_server_thread, daemon=True).start()
+
+    def _connect_to_server_thread(self):
+        # Perform the connection logic in the thread
+        if self.controller.connect():
+            # Update the label on the main thread
+            time.sleep(2)
+            self.connection_label.after(0, lambda: self.connection_label.configure(text="Successfully Connected to Server!", text_color="green"))
+            self.connection_label2.configure(text="Close Window to Proceed")
+            self.task_complete = True
+        else:
+            time.sleep(2)
+            self.connection_label.after(0, lambda: self.connection_label.configure(text="Connection Failed. Check Host IP and Port Number"))
+            self.task_complete = False
+
+

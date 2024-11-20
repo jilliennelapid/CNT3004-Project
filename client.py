@@ -4,11 +4,11 @@ import json
 import base64
 from collections.abc import Buffer
 from random import seed
-
+import time
 # client and server should match port
-host = '10.221.82.173' #VM external IP
-#host = '127.0.0.1'
-port = 3300
+# using localhost for testing purposes
+host = "localhost"
+port = 8080
 
 BUFFER_SIZE = 1024
 FORMAT = "utf-8"
@@ -17,15 +17,35 @@ class Client:
     def __init__(self):
         # Creates client-side TCP socket (SOCK_STREAM) for IPv4 (AF_INET)
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+        self.server_mess = ""
     def activate_client(self):
         try:
             # Try to connect to server with the given host address and port number
             self.client.connect((host, port))
-            return True
-        except socket.error:
+        except socket.error as e:
+            print(f"Error: {e}")
             # Return false for a socket connection error
+
+    def test_connection(self):
+        test_mess = {"command": "TEST"}
+        self.client.send(json.dumps(test_mess).encode(FORMAT))
+
+        # Receive response from the server
+        try:
+            # Look for response from the server
+            response = self.client.recv(BUFFER_SIZE).decode(FORMAT)
+
+            # If "OK" response, then connection is good
+            if response == "OK":
+                print("Connection test successful: Server responded with 'OK'")
+                return True
+            else:
+                print(f"Connection test failed: Unexpected response '{response}'")
+                return False
+        except socket.error as e:
+            print(f"Error receiving server response: {e}")
             return False
+
 
     # Sends request to create folder up to the server
     def request_create_folder(self, folderName):
@@ -60,6 +80,12 @@ class Client:
 
     def close_client(self):
         self.client.close()
+        print("client closed")
+
+    def request_server_close(self):
+        close_mess = {"command": "END"}
+        self.client.send(json.dumps(close_mess).encode(FORMAT))
+        print("request to close server")
 
 """
 if __name__ == '__main__':

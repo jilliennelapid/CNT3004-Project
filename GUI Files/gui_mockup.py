@@ -1,9 +1,10 @@
 from model import Model
-from view import View
+from view import View, InitView
 from controller import Controller
 
 import tkinter as tk
 import customtkinter as ctk
+import time
 
 class App(ctk.CTk):
     def __init__(self):
@@ -15,9 +16,10 @@ class App(ctk.CTk):
 
         # Initializes instances of the Model, View, and Controller classes.
         # Passes the model and view to the controller
-        model = Model()
+        # model = Model()
+
         view = View(self)
-        controller = Controller(model, view)
+        self.controller = Controller(view)
 
         self.geometry("860x720")
         self.resizable(False,False)
@@ -25,24 +27,21 @@ class App(ctk.CTk):
 
         self.attributes('-alpha', 0.0)
         self.attributes('-alpha', 1.0)
+        self.update_idletasks()
 
-        View.set_controller(view, controller)
+        View.set_controller(view, self.controller)
 
+        initView = InitView(view)
+        InitView.set_controller(initView, self.controller)
+        self.update_idletasks()
 
-    def center_window(self):
-        self.update_idletasks()  # Ensure all widgets are rendered
-        width = self.winfo_width()
-        height = self.winfo_height()
-        screen_width = self.winfo_screenwidth()
-        screen_height = self.winfo_screenheight()
+        InitView.connect_to_server(initView)
 
-        # Calculate position
-        x = (screen_width // 2) - (width // 2)
-        y = (screen_height // 2) - (height // 2)
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
 
-        # Set the geometry of the window
-        self.geometry(f'{width}x{height}+{x}+{y}')
-
+    def on_close(self):
+        self.controller.disconnect()
+        self.destroy()
 
 if __name__ == '__main__':
     # Creates an object from class App, which also creates the window using tkinter module
