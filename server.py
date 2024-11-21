@@ -25,6 +25,7 @@ class Server:
         try:
             # Try to bind host to the given host address and port number.
             self.server.bind((host, port))
+            print("Bind Success")
         except socket.error:
             return False
 
@@ -37,7 +38,7 @@ class Server:
 
             # with multithreating, call decode_client
             with conn:
-                print("receiving message")
+                print("Ready to Receive Message...")
                 self.decode_client(conn)
 
 

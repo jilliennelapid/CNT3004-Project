@@ -1,4 +1,3 @@
-from model import Model
 from view import View, InitView
 from controller import Controller
 

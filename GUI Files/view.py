@@ -76,7 +76,7 @@ class View(tk.Frame):
 
         self.label_US = ctk.CTkLabel(self.upload_current_frame, text='Current Upload Statistics',
                                   font=(globalFont, 17, 'bold'))
-        self.label_US.grid(row=0, column=0, sticky='w', padx=10, pady=(10,0))
+        self.label_US.grid(row=0, column=0, columnspan=2, sticky='w', padx=10, pady=(10,0))
 
         ### Upload Statistics Labels
         self.label_US_FN = ctk.CTkLabel(self.upload_current_frame, text='File Name', font=(globalFont, 14))
@@ -93,16 +93,16 @@ class View(tk.Frame):
 
         ### Upload Statistics Values
         self.label_US_FN_val = ctk.CTkLabel(self.upload_current_frame, text='-', font=(globalFont, 14, 'bold'))
-        self.label_US_FN_val.grid(row=1, column=1, sticky='e', padx=(0,20), pady=5)
+        self.label_US_FN_val.grid(row=1, column=1, sticky='e', padx=(0, 30), pady=5)
 
         self.label_US_UDR_val = ctk.CTkLabel(self.upload_current_frame, text='-', font=(globalFont, 14, 'bold'))
-        self.label_US_UDR_val.grid(row=2, column=1, sticky='e', padx=(0,20), pady=5)
+        self.label_US_UDR_val.grid(row=2, column=1, sticky='e', padx=(0, 30), pady=5)
 
         self.label_US_FUT_val = ctk.CTkLabel(self.upload_current_frame, text='-', font=(globalFont, 14, 'bold'))
-        self.label_US_FUT_val.grid(row=3, column=1, sticky='e', padx=(0,20), pady=5)
+        self.label_US_FUT_val.grid(row=3, column=1, sticky='e', padx=(0, 30), pady=5)
 
         self.label_US_SRT_val = ctk.CTkLabel(self.upload_current_frame, text='-', font=(globalFont, 14, 'bold'))
-        self.label_US_SRT_val.grid(row=4, column=1, sticky='e', padx=(0,20), pady=5)
+        self.label_US_SRT_val.grid(row=4, column=1, sticky='e', padx=(0, 30), pady=5)
 
         ## Upload History Box (Frame)
         self.upload_history_frame = ctk.CTkFrame(self.upload_frame, border_width=2, width=230, border_color='#59b1f0',
@@ -118,17 +118,35 @@ class View(tk.Frame):
         # self.label_UH.bind("<Button-1", #)
         self.label_UH.grid(row=0, column=0, sticky='w', padx=10, pady=(10, 0))
 
+        ### Column Labels
         self.label_UH_FN = ctk.CTkLabel(self.upload_history_frame, text='File Name', font=(globalFont, 12))
         self.label_UH_FN.grid(row=1, column=0, sticky='w', padx=(20, 0), pady=(5, 0))
 
         self.label_UH_ST = ctk.CTkLabel(self.upload_history_frame, text='Start Time', font=(globalFont, 12))
-        self.label_UH_ST.grid(row=1, column=1, sticky='w', padx=(0, 20), pady=(5, 0))
+        self.label_UH_ST.grid(row=1, column=1, sticky='w', padx=(12, 20), pady=(5, 0))
 
         self.label_UH_CT = ctk.CTkLabel(self.upload_history_frame, text='Complete Time', font=(globalFont, 12))
         self.label_UH_CT.grid(row=1, column=2, sticky='w', padx=(0, 20), pady=(5, 0))
 
         self.label_UH_status = ctk.CTkLabel(self.upload_history_frame, text='Status', font=(globalFont, 12))
-        self.label_UH_status.grid(row=1, column=3, sticky='w', padx=(0, 20), pady=(5, 0))
+        self.label_UH_status.grid(row=1, column=3, sticky='w', padx=(7, 10), pady=(5, 0))
+
+        ### Textboxes for adding new upload history
+        self.textbox_UH_FN = ctk.CTkTextbox(self.upload_history_frame, width=210)
+        self.textbox_UH_FN.insert("0.0", "file ex")
+        self.textbox_UH_FN.grid(row=2, column=0, sticky='w', padx=(20, 0), pady=(5, 0))
+
+        self.textbox_UH_ST = ctk.CTkTextbox(self.upload_history_frame, width=80)
+        self.textbox_UH_ST.insert("0.0", "start time ex")
+        self.textbox_UH_ST.grid(row=2, column=1, padx=(0, 20), pady=(5, 0))
+
+        self.textbox_UH_CT = ctk.CTkTextbox(self.upload_history_frame, width=80)
+        self.textbox_UH_CT.insert("0.0", "comp time ex")
+        self.textbox_UH_CT.grid(row=2, column=2, sticky='w', padx=(0, 0), pady=(5, 0))
+
+        self.textbox_UH_status = ctk.CTkTextbox(self.upload_history_frame, width=50)
+        self.textbox_UH_status.insert("0.0", "status ex")
+        self.textbox_UH_status.grid(row=2, column=3, sticky='e', padx=(0, 10), pady=(5, 0))
 
         """Download Widgets Frame"""
         self.download_frame = ctk.CTkFrame(parent, fg_color='transparent')
@@ -155,7 +173,7 @@ class View(tk.Frame):
 
         self.label_DS = ctk.CTkLabel(self.download_current_frame, text='Current Download Statistics',
                                   font=(globalFont, 17, 'bold'))
-        self.label_DS.grid(row=0, column=0, sticky='w', padx=10, pady=(10,0))
+        self.label_DS.grid(row=0, column=0, columnspan=2, sticky='w', padx=10, pady=(10,0))
 
         ### Download Statistics Labels
         self.label_DS_FN = ctk.CTkLabel(self.download_current_frame, text='File Name', font=(globalFont, 14))
@@ -172,16 +190,16 @@ class View(tk.Frame):
 
         ### Download Statistics Values
         self.label_DS_FN_val = ctk.CTkLabel(self.download_current_frame, text='-', font=(globalFont, 14, 'bold'))
-        self.label_DS_FN_val.grid(row=1, column=1, sticky='e', padx=(0, 20), pady=5)
+        self.label_DS_FN_val.grid(row=1, column=1, sticky='e', padx=(0, 30), pady=5)
 
         self.label_DS_DDR_val = ctk.CTkLabel(self.download_current_frame, text='-', font=(globalFont, 14, 'bold'))
-        self.label_DS_DDR_val.grid(row=2, column=1, sticky='e', padx=(0, 20), pady=5)
+        self.label_DS_DDR_val.grid(row=2, column=1, sticky='e', padx=(0, 30), pady=5)
 
         self.label_DS_FDT_val = ctk.CTkLabel(self.download_current_frame, text='-', font=(globalFont, 14, 'bold'))
-        self.label_DS_FDT_val.grid(row=3, column=1, sticky='e', padx=(0, 20), pady=5)
+        self.label_DS_FDT_val.grid(row=3, column=1, sticky='e', padx=(0, 30), pady=5)
 
         self.label_DS_SRT_val = ctk.CTkLabel(self.download_current_frame, text='-', font=(globalFont, 14, 'bold'))
-        self.label_DS_SRT_val.grid(row=4, column=1, sticky='e', padx=(0, 20), pady=5)
+        self.label_DS_SRT_val.grid(row=4, column=1, sticky='e', padx=(0, 30), pady=5)
 
         ## Download History Box (Frame)
         self.download_history_frame = ctk.CTkFrame(self.download_frame, border_width=2, width=230,
@@ -197,24 +215,42 @@ class View(tk.Frame):
         self.label_DH = ctk.CTkLabel(self.download_history_frame, text='Download History', font=(globalFont, 18))
         self.label_DH.grid(row=0, column=0, sticky='w', padx=10, pady=(10, 0))
 
+        ### Column Labels
         self.label_DH_FN = ctk.CTkLabel(self.download_history_frame, text='File Name', font=(globalFont, 12))
         self.label_DH_FN.grid(row=1, column=0, sticky='w', padx=(20, 0), pady=(5, 0))
 
         self.label_DH_ST = ctk.CTkLabel(self.download_history_frame, text='Start Time', font=(globalFont, 12))
-        self.label_DH_ST.grid(row=1, column=1, sticky='w', padx=(0, 20), pady=(5, 0))
+        self.label_DH_ST.grid(row=1, column=1, sticky='w', padx=(12, 20), pady=(5, 0))
 
         self.label_DH_CT = ctk.CTkLabel(self.download_history_frame, text='Complete Time', font=(globalFont, 12))
         self.label_DH_CT.grid(row=1, column=2, sticky='w', padx=(0, 20), pady=(5, 0))
 
         self.label_DH_status = ctk.CTkLabel(self.download_history_frame, text='Status', font=(globalFont, 12))
-        self.label_DH_status.grid(row=1, column=3, sticky='w', padx=(0, 20), pady=(5, 0))
+        self.label_DH_status.grid(row=1, column=3, sticky='w', padx=(7, 10), pady=(5, 0))
 
+        ### Textboxes for adding new upload history
+        self.textbox_DH_FN = ctk.CTkTextbox(self.download_history_frame, width=210)
+        self.textbox_DH_FN.insert("0.0", "file ex")
+        self.textbox_DH_FN.grid(row=2, column=0, sticky='w', padx=(20, 0), pady=(5, 0))
+
+        self.textbox_DH_ST = ctk.CTkTextbox(self.download_history_frame, width=80)
+        self.textbox_DH_ST.insert("0.0", "start time ex")
+        self.textbox_DH_ST.grid(row=2, column=1, padx=(0, 20), pady=(5, 0))
+
+        self.textbox_DH_CT = ctk.CTkTextbox(self.download_history_frame, width=80)
+        self.textbox_DH_CT.insert("0.0", "comp time ex")
+        self.textbox_DH_CT.grid(row=2, column=2, sticky='w', padx=(0, 0), pady=(5, 0))
+
+        self.textbox_DH_status = ctk.CTkTextbox(self.download_history_frame, width=50)
+        self.textbox_DH_status.insert("0.0", "status ex")
+        self.textbox_DH_status.grid(row=2, column=3, sticky='e', padx=(0, 10), pady=(5, 0))
         self.update_idletasks()
 
-
+    # Sets the controller that view is connected to
     def set_controller(self, controller):
         self.controller = controller
 
+    # Opens the user's file directory for file searching
     def open_file_dialog(self):
         filepaths = filedialog.askopenfilenames(
             title="Select a File to Upload to Server",
@@ -234,9 +270,41 @@ class View(tk.Frame):
                 # Send the file data to the controller
                 self.controller.upload(name, filepath)
 
+    # Opens the server's files and displays them
+    def open_server_directory(self):
+        return
+
+    # Displays the File Upload Statistics
+    def display_upload_stats(self):
+        # will most likely pass in some parameter that contains the stat data
+        filename = ""
+        upload_rate = ""
+        upload_time = ""
+        sys_res_time = ""
+
+        self.label_US_FN_val.configure(text=filename)
+        self.label_US_UDR_val.configure(text=upload_rate)
+        self.label_US_FUT_val.configure(text=upload_time)
+        self.label_US_SRT_val.configure(text=sys_res_time)
+
+    # Displays the File Download Statistics
+    def display_download_stats(self):
+        filename = ""
+        download_rate = ""
+        download_time = ""
+        sys_res_time = ""
+
+        self.label_DS_FN_val.configure(text=filename)
+        self.label_DS_DDR_val.configure(text=download_rate)
+        self.label_DS_FDT_val.configure(text=download_time)
+        self.label_DS_SRT_val.configure(text=sys_res_time)
+
+    """ Will work on expanded windows for the upload and download history if there's time """
     def expand_upload_history(self):
         print("upload history")
 
+    def expand_download_history(self):
+        print("download history")
 
 class InitView(tk.Frame):
     task_complete = False
@@ -249,6 +317,7 @@ class InitView(tk.Frame):
         # Draw the top level window
         self.server_connect_window = ctk.CTkToplevel(parent)
         self.server_connect_window.geometry("400x300")
+        self.server_connect_window.resizable(False,False)
         self.server_connect_window.title("Server Connection")
         self.server_connect_window.transient()
         self.server_connect_window.grab_set()

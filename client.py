@@ -71,6 +71,7 @@ class Client:
         up_file_mess = {"command": "UPLOAD", "filename": filename, "filedata": enc_file_data}
 
         # Sending the data as JSON over client socket
+        print(f"Sending file {filename}")
         self.client.send(json.dumps(up_file_mess).encode(FORMAT))
 
     # Sends request for a file download up to the server.
