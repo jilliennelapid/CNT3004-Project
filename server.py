@@ -3,6 +3,7 @@
 import socket
 import json
 import os
+import time
 
 #host binds to local server ip
 # using localhost for testing purposes
@@ -56,13 +57,17 @@ class Server:
             filename = ""
 
         if command == "TEST":
+            start_time = time.time()  # added for server response time
             connection.send("OK".encode(FORMAT))
+            response_time = time.time() - start_time  # added for server response time
+            print("Server response time: {response_time:.4f} seconds")  # added for server response time
 
         elif command == "END":
             # Close the connection between the client and the server
             connection.close()
 
         elif command == "UPLOAD":
+            start_time = time.time()  # added for upload data rate
             filedata = decode_mess["filedata"]
 
             with open(os.path.join(server_path, filename), 'wb') as f:
@@ -70,8 +75,12 @@ class Server:
                 f.write(filedata)
                 # Closes created file
                 f.close()
+            elapsed_time = time.time() - start_time  # added for upload data rate
+            upload_rate = file_size / elapsed_time / 1_048_576  # added for upload data rate
+            print(f"Upload data rate = {upload_rate:.2f} MB/s")  # added for upload data rate
 
         elif command == "DOWNLOAD":
+            start_time = time.time()  # added for download data rate
             filepath = os.path.join(server_path, filename)
 
             if not os.path.exists(filepath):
@@ -81,6 +90,9 @@ class Server:
             with open(filepath, 'rb') as f:
                 while chunk := f.read(BUFFER_SIZE):
                     connection.send(chunk)
+            elapsed_time = time.time() - start_time  # added for download data rate
+            download_rate = file_size / elapsed_time / 1_048_576  # added for download data rate
+            print(f"Download data rate = {download_rate:.2f} MB/s")  # added for download data rate
 
         elif command == "DELETE":
             filepath = os.path.join(server_path, filename)
