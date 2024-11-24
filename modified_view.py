@@ -2,29 +2,43 @@ import tkinter as tk
 from tkinter import messagebox
 import customtkinter as ctk
 import Sigup_window
+import requests
+from tkinter import messagebox
 
+
+def validate_credentials(username, password):
+    """
+    Validates the username and password against a .txt file hosted remotely.
+    Each line in the file should have the format: username,password
+    """
+    # URL to the remote file
+    url = "https://your-remote-repository.com/passwords.txt"  # Replace with actual URL
+
+    try:
+        # Fetch the remote file
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            # Parse the file contents
+            credentials_data = response.text.splitlines()
+            for line in credentials_data:
+                stored_username, stored_password = line.strip().split(",")
+                if username == stored_username and password == stored_password:
+                    return True
+        else:
+            print(f"Error fetching credentials file. HTTP Status: {response.status_code}")
+            messagebox.showerror("Error", "Failed to access credentials file on the server.")
+    except requests.RequestException as e:
+        print(f"An error occurred while fetching credentials: {e}")
+        messagebox.showerror("Error", f"An error occurred: {e}")
+
+    return False
 
 def open_signup_window():
     """Opens the signup window."""
     app.destroy()  # Properly close the current window
  # Assuming Sigup_window.Signup creates the signup GUI
     Sigup_window.Signup().mainloop()
-
-def validate_credentials(username, password):
-    """
-    Validates the username and password against a .txt file.
-    Each line in the file should have the format: username,password
-    """
-    try:
-        with open("passwords.txt", "r") as file:
-            for line in file:
-                stored_username, stored_password = line.strip().split(",")
-                if username == stored_username and password == stored_password:
-                    return True
-    except FileNotFoundError:
-        print("Error: credentials.txt file not found.")
-        messagebox.showerror("Error", "Credentials file not found.")
-    return False
 
 
 class InitView(tk.Tk):
