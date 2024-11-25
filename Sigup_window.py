@@ -50,7 +50,7 @@ class Signup(tk.Tk):
         password = self.password_entry.get()
 
         if username and password:  # Ensure fields are not empty
-            temp_file_path = "passwords_temp.txt"
+            temp_file_path = "passwords.txt"
             
             # Save credentials temporarily to a file
             with open(temp_file_path, "w") as file:

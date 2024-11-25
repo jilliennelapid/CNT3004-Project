@@ -1,3 +1,5 @@
+# View
+# Contains all code for drawing the GUI window and aiding its functionality
 import tkinter as tk
 import customtkinter as ctk
 from tkinter import font, filedialog
@@ -157,7 +159,8 @@ class View(tk.Frame):
 
         self.server_dir_button = ctk.CTkButton(self.download_frame, corner_radius=5, text='Download File',
                                                font=(globalFont, 25, 'bold'), fg_color='#59b1f0', hover_color='#3977e3',
-                                               text_color='#fafcff', border_spacing=10, width=270, height=60)
+                                               text_color='#fafcff', border_spacing=10, width=270, height=60,
+                                               command=self.open_server_directory)
 
         self.server_dir_button.grid(row=0, column=0, sticky='w', padx=20)
 
@@ -272,26 +275,28 @@ class View(tk.Frame):
 
     # Opens the server's files and displays them
     def open_server_directory(self):
-        return
+        self.controller.download()
+        print("download button success")
 
     # Displays the File Upload Statistics
-    def display_upload_stats(self):
+    def display_upload_stats(self, up_data):
         # will most likely pass in some parameter that contains the stat data
-        filename = ""
-        upload_rate = ""
-        upload_time = ""
+        filename = up_data["filename"]
+        upload_rate = up_data["uploadRate"]
+        upload_time = up_data["time"]
         sys_res_time = ""
 
         self.label_US_FN_val.configure(text=filename)
         self.label_US_UDR_val.configure(text=upload_rate)
         self.label_US_FUT_val.configure(text=upload_time)
         self.label_US_SRT_val.configure(text=sys_res_time)
+        print("displayed upload stats")
 
     # Displays the File Download Statistics
-    def display_download_stats(self):
-        filename = ""
-        download_rate = ""
-        download_time = ""
+    def display_download_stats(self, down_data):
+        filename = down_data["filename"]
+        download_rate = down_data["downloadRate"]
+        download_time = down_data["time"]
         sys_res_time = ""
 
         self.label_DS_FN_val.configure(text=filename)
@@ -357,12 +362,12 @@ class InitView(tk.Frame):
         # Perform the connection logic in the thread
         if self.controller.connect():
             # Update the label on the main thread
-            time.sleep(2)
+            time.sleep(3)
             self.connection_label.after(0, lambda: self.connection_label.configure(text="Successfully Connected to Server!", text_color="green"))
             self.connection_label2.configure(text="Close Window to Proceed")
             self.task_complete = True
         else:
-            time.sleep(2)
+            time.sleep(3)
             self.connection_label.after(0, lambda: self.connection_label.configure(text="Connection Failed. Check Host IP and Port Number"))
             self.task_complete = False
 

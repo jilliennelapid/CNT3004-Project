@@ -1,10 +1,10 @@
-#TCP client basic.py
+# Client Side Code
+### Requests actions for the server to do.
 import socket
 import json
 import base64
-from collections.abc import Buffer
-from random import seed
-import time
+import threading
+
 # client and server should match port
 # using localhost for testing purposes
 host = "localhost"
@@ -15,9 +15,15 @@ FORMAT = "utf-8"
 
 class Client:
     def __init__(self):
+        self.controller = None
+
         # Creates client-side TCP socket (SOCK_STREAM) for IPv4 (AF_INET)
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_mess = ""
+
+    def set_controller(self, controller):
+        self.controller = controller
+
     def activate_client(self):
         try:
             # Try to connect to server with the given host address and port number
@@ -26,26 +32,48 @@ class Client:
             print(f"Error: {e}")
             # Return false for a socket connection error
 
+        def listen_to_server():
+            while True:
+                try:
+                    # Receive response from the server
+                    response = self.client.recv(BUFFER_SIZE).decode(FORMAT)
+
+                    if not response:
+                        print("Server closed the connection.")
+                        break  # Exit the loop if the server closes the connection
+
+                    if "@" in response:
+                        mess_type, payload = response.split("@")
+                        print(f"Server message received: {response}")
+
+                        if mess_type == "OK":
+                            print("Connection test successful: Server responded with 'OK'")
+                            self.controller.statusFlag = True
+                            print(f"statusFlag is now: {self.controller.statusFlag}")
+                            print("updated statusflag")
+                            self.controller.flag_event.set()
+                        elif mess_type == "UPSTATS":
+                            self.controller.send_upload_stats(payload)
+                            print("Sent upload stats to controller.")
+                        elif mess_type == "DOWNSTATS":
+                            self.controller.send_download_stats(payload)
+                        else:
+                            print(f"Unknown message type: {mess_type}")
+                    else:
+                        print(f"Malformed message from server: {response}")
+                except socket.error as e:
+                    print(f"Error receiving server response: {e}")
+                    break
+            self.client.close()  # Ensure the client is closed when exiting the loop
+
+        # Start the listener thread
+        listener_thread = threading.Thread(target=listen_to_server, daemon=True)
+        listener_thread.start()
+
     def test_connection(self):
         test_mess = {"command": "TEST"}
         self.client.send(json.dumps(test_mess).encode(FORMAT))
-
-        # Receive response from the server
-        try:
-            # Look for response from the server
-            response = self.client.recv(BUFFER_SIZE).decode(FORMAT)
-
-            # If "OK" response, then connection is good
-            if response == "OK":
-                print("Connection test successful: Server responded with 'OK'")
-                return True
-            else:
-                print(f"Connection test failed: Unexpected response '{response}'")
-                return False
-        except socket.error as e:
-            print(f"Error receiving server response: {e}")
-            return False
-
+        return True
 
     # Sends request to create folder up to the server
     def request_create_folder(self, folderName):
@@ -78,6 +106,7 @@ class Client:
     def request_download_file(self, filename):
         down_file_mess = {"command": "DOWNLOAD", "filename": filename}
         self.client.send(json.dumps(down_file_mess).encode(FORMAT))
+        print("request download")
 
     def close_client(self):
         self.client.close()
@@ -87,47 +116,3 @@ class Client:
         close_mess = {"command": "END"}
         self.client.send(json.dumps(close_mess).encode(FORMAT))
         print("request to close server")
-
-"""
-if __name__ == '__main__':
-    client_socket = Client()
-
-    client_socket.activate_client()
-
-    
-        while True:
-             message = input('Enter a message or q for quit: ')
-             if message == 'q':
-                quit()
-             next(setup_connection())   
-"""
-
-
-"""
-#TCP client basic.py
-import socket
-from collections.abc import Buffer
-from random import seed
-
-# client and server should match port
-host = '10.221.82.173' #VM external IP
-#host = '127.0.0.1'
-port = 3300
-
-BUFFER_SIZE = 1024
-
-def setup_connection():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_tcp:
-        client_tcp.connect((host, port))
-        #convert strings to bytes
-        client_tcp.send(message.encode('utf-8'))#object required
-        data = client_tcp.recv(BUFFER_SIZE)
-        yield print(f'The message received from the server: {data.decode("utf-8")}')
-        #client_tcp.close() #close not needed using 'with' context
-if __name__ == '__main__':
-        while True:
-             message = input('Enter a message or q for quit: ')
-             if message == 'q':
-                quit()
-             next(setup_connection())
-"""

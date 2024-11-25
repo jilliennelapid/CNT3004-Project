@@ -1,3 +1,5 @@
+# Main
+# Initiates the main app call and starts all essential parts of the program
 from view import View, InitView
 from controller import Controller
 
