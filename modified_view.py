@@ -1,15 +1,15 @@
 import tkinter as tk
-from tkinter import messagebox
 import customtkinter as ctk
 import Sigup_window
 import requests
 from tkinter import messagebox
+import bcrypt  # Library for password hashing
 
 
 def validate_credentials(username, password):
     """
     Validates the username and password against a .txt file hosted remotely.
-    Each line in the file should have the format: username,password
+    Each line in the file should have the format: username,hashed_password
     """
     # URL to the remote file
     url = "https://your-remote-repository.com/passwords.txt"  # Replace with actual URL
@@ -22,9 +22,11 @@ def validate_credentials(username, password):
             # Parse the file contents
             credentials_data = response.text.splitlines()
             for line in credentials_data:
-                stored_username, stored_password = line.strip().split(",")
-                if username == stored_username and password == stored_password:
-                    return True
+                stored_username, stored_hashed_password = line.strip().split(",")
+                if username == stored_username:
+                    # Check if the entered password matches the stored hashed password
+                    if bcrypt.checkpw(password.encode(), stored_hashed_password.encode()):
+                        return True
         else:
             print(f"Error fetching credentials file. HTTP Status: {response.status_code}")
             messagebox.showerror("Error", "Failed to access credentials file on the server.")
@@ -34,10 +36,10 @@ def validate_credentials(username, password):
 
     return False
 
+
 def open_signup_window():
     """Opens the signup window."""
     app.destroy()  # Properly close the current window
- # Assuming Sigup_window.Signup creates the signup GUI
     Sigup_window.Signup().mainloop()
 
 
