@@ -1,10 +1,8 @@
-
 import tkinter as tk
 import customtkinter as ctk
 from tkinter import messagebox
-import requests  # For HTTP requests
-import os  # For handling temporary file creation and deletion
-import modified_view
+import bcrypt # Library for encryption
+import os
 
 
 class Signup(tk.Tk):
@@ -44,44 +42,27 @@ class Signup(tk.Tk):
 
     def save_credentials(self):
         """
-        Saves the inputted username and password to a remote repository.
+        Saves the inputted username and hashed password to passwords.txt.
         """
         username = self.username_entry.get()
         password = self.password_entry.get()
 
         if username and password:  # Ensure fields are not empty
-            temp_file_path = "passwords.txt"
-            
-            # Save credentials temporarily to a file
-            with open(temp_file_path, "w") as file:
-                file.write(f"{username},{password}\n")
+            # Ensures passwords are not safe in plain text on the credentials txt
+            hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+            credentials = f"{username},{hashed_password.decode()}\n"
 
-            # Upload the file to the remote repository
-            try:
-                url = "https://your-remote-repository.com/upload"  # Replace with your endpoint
-                with open(temp_file_path, "rb") as file:
-                    response = requests.post(url, files={"file": file})
+            # Ensure the file exists
+            if not os.path.exists("passwords.txt"):
+                open("passwords.txt", "w").close()
 
-                # Check the response
-                if response.status_code == 200:
-                    print("Credentials saved to remote repository successfully!")
-                    tk.messagebox.showinfo("Success", "Credentials saved successfully!")
-                else:
-                    print(f"Failed to upload credentials. HTTP Status: {response.status_code}")
-                    tk.messagebox.showerror("Error", "Failed to save credentials to remote repository.")
+            # Save the hashed password
+            with open("passwords.txt", "a") as file:
+                file.write(credentials)
 
-            except Exception as e:
-                print(f"An error occurred: {e}")
-                tk.messagebox.showerror("Error", f"An error occurred: {e}")
-
-            finally:
-                # Clean up temporary file
-                if os.path.exists(temp_file_path):
-                    os.remove(temp_file_path)
-
+            print("Credentials saved securely!")
+            tk.messagebox.showinfo("Success", "Credentials saved securely!")
             self.destroy()
-            modified_view.InitView()  # Open the InitView window from modified_view
-
         else:
             print("Both fields must be filled.")
             tk.messagebox.showerror("Error", "Both fields must be filled.")
@@ -91,7 +72,6 @@ class Signup(tk.Tk):
         Handles the close button (X) event.
         """
         self.destroy()  # Close the current window
-        modified_view.InitView()  # Open the InitView window
 
 
 # Run the Signup view if this file is executed directly
