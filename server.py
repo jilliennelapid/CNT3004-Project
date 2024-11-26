@@ -15,6 +15,8 @@ BUFFER_SIZE = 1024  # might need to play around with buffer sizes for size of fi
 dashes = '---->'
 FORMAT = 'utf-8'
 
+threads =[]
+
 # Server path will be created in google cloud VM instance.
 # currently a made up path !
 server_path = "/path"
@@ -43,7 +45,9 @@ class Server:
             # with multithreating, call decode_client
             with conn:
                 print("Ready to Receive Message...")
-                self.decode_client(conn)
+                t = threading.Thread(target=self.decode_client, args=(conn))
+                t.start()
+                threads.append(t)
 
     def decode_client(self, connection):
         while True:
@@ -153,7 +157,8 @@ class Server:
 
     def close_server(self):
         self.server.close()
-
+        for t in threads:
+            t.join()
 
 if __name__ == "__main__":
     server_socket = Server()
