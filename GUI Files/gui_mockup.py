@@ -1,6 +1,6 @@
 # Main
 # Initiates the main app call and starts all essential parts of the program
-from view import View, InitView
+from view import View, InitView, LoginView
 from controller import Controller
 
 import customtkinter as ctk
@@ -10,28 +10,25 @@ class App(ctk.CTk):
         # Initializes the GUI main window
         super().__init__()
 
-        # Sets the title of the main window
-        self.title("Server File Share Application")
-
+        # Expands upon the main window in the View class
         view = View(self)
+
+        # Initializes the controller
         self.controller = Controller(view)
-
-        self.geometry("860x720")
-        self.resizable(False,False)
-        view.grid(sticky='nsew')
-
-        self.attributes('-alpha', 0.0)
-        self.attributes('-alpha', 1.0)
-        self.update_idletasks()
 
         View.set_controller(view, self.controller)
 
-        initView = InitView(view)
+        # Creates window to do the server connection
+        initView = InitView(self)
         InitView.set_controller(initView, self.controller)
         self.update_idletasks()
-
+        # Window tries to connect to the server
         InitView.connect_to_server(initView)
 
+        # Creates the window for login
+        loginView = LoginView(self)
+
+        # Handles the closing of the main window
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def on_close(self):

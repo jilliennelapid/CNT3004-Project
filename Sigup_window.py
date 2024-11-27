@@ -5,7 +5,7 @@ import bcrypt # Library for encryption
 import os
 
 
-class Signup(tk.Tk):
+class Signup(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Save Credentials")

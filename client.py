@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 # client and server should match port
 # using localhost for testing purposes
-host = "34.173.115.199"
+host = "34.30.38.238"
 port = 3389
 
 BUFFER_SIZE = 32786

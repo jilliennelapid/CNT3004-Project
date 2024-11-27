@@ -1,17 +1,21 @@
 # View
 # Contains all code for drawing the GUI window and aiding its functionality
 import tkinter as tk
-from fileinput import filename
-
+import bcrypt  # Library for password hashing
 import customtkinter as ctk
-from tkinter import font, filedialog
+from tkinter import font, filedialog,  messagebox
 import os
 import threading
 import time
 import json
+import requests
+import asyncio
 
 FORMAT = "utf-8"
 FILE_STORAGE_DIR = "/home/jillienne_lapid/server_files"
+
+# Server path will be created in google cloud VM instance.
+FS_DIR = os.path.expanduser("~/passwords.txt")
 
 class View(tk.Frame):
     task_complete = False
@@ -22,6 +26,15 @@ class View(tk.Frame):
         # Initialize the controller to None
         self.controller = None
         self.files = None
+
+        # Sets the title of the main window
+        parent.title("Server File Share Application")
+        parent.geometry("860x720")
+        parent.resizable(False, False)
+        self.grid(sticky='nsew')
+
+        parent.attributes('-alpha', 0.0)
+        parent.attributes('-alpha', 1.0)
 
         """attributes pertaining to the whole window"""
         globalFont = font.Font(family='Helvetica')
@@ -397,7 +410,7 @@ class View(tk.Frame):
         # Function to handle Select button click
         def delete_file():
             def confirm_file():
-                self.controller.makedir(selected_file)
+                self.controller.delete(selected_file)
                 delete_window.confirm_window.destroy()
 
             # Get the selected file (only one file is allowed for download)
@@ -557,7 +570,7 @@ class InitView(tk.Frame):
                                               font=('Helvetica', 18))
         self.connection_label3.grid(row=2, column=0, sticky='n', pady=(20, 0))
 
-        # Bind the close button action to our custom function
+        # Bind the close button action to on_close() function
         self.server_connect_window.protocol("WM_DELETE_WINDOW", self.on_close)
 
         self.update_idletasks()
@@ -572,8 +585,6 @@ class InitView(tk.Frame):
         else:
             self.connection_label3.configure(text="Cannot Proceed Yet, Attempting to Connect")
             print("Task not complete. Cannot close yet.")  # Notify user
-
-    import threading
 
     def connect_to_server(self):
         # Run the connection logic in a separate thread
@@ -643,3 +654,191 @@ class ConfirmView(tk.Frame):
 
         self.confirm_button = ctk.CTkButton(self.content_frame, text="Confirm", font=('Helvetica', 12))
         self.confirm_button.grid(row=2, column=0, sticky="e")
+
+class LoginView(tk.Frame):
+    task_complete = False
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.login_window = ctk.CTkToplevel(parent)
+        self.login_window.geometry("400x300")
+        self.login_window.attributes("-topmost", True)
+        self.login_window.resizable(False, False)
+        self.login_window.title("Login Screen")
+        self.login_window.transient()
+
+        self.login_window.grid_columnconfigure(0, weight=1)
+
+        # Frame
+        self.frame = ctk.CTkFrame(self.login_window, fg_color="transparent")
+        self.frame.grid(column=0, sticky="nsew")
+
+        # Title Label
+        self.title_label = ctk.CTkLabel(self.frame, text="Login", font=("Helvetica", 20))
+        self.title_label.grid(row=0, column=0, columnspan=2, pady=10)
+
+        # Username Label and Entry
+        self.username_label = ctk.CTkLabel(self.frame, text="Username:")
+        self.username_label.grid(row=1, column=0, padx=10, pady=5, sticky='e')
+
+        self.username_entry = ctk.CTkEntry(self.frame, placeholder_text="Enter your username")
+        self.username_entry.grid(row=1, column=1, padx=10, pady=5, sticky='w')
+
+        # Password Label and Entry
+        self.password_label = ctk.CTkLabel(self.frame, text="Password:")
+        self.password_label.grid(row=2, column=0, padx=10, pady=5, sticky='e')
+
+        self.password_entry = ctk.CTkEntry(self.frame, placeholder_text="Enter your password", show="*")
+        self.password_entry.grid(row=2, column=1, padx=10, pady=5, sticky='w')
+
+        # Signup Button
+        self.signup_button = ctk.CTkButton(self.frame, text="Signup", command=self.open_signup_window)
+        self.signup_button.grid(row=3, column=0, padx=10, pady=10, sticky='w')
+
+        # Login Button
+        self.login_button = ctk.CTkButton(self.frame, text="Login", command=self.handle_login)
+        self.login_button.grid(row=3, column=1, padx=10, pady=10, sticky='e')
+
+        # Bind the close button action to our custom function
+        self.login_window.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    # Function to override the close button action
+    def on_close(self):
+        if self.task_complete:
+            self.login_window.destroy()  # Allow closing if the task is complete
+        else:
+            print("Task not complete. Cannot close yet.")  # Notify user
+
+
+    def handle_login(self):
+        """Handles login logic."""
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+
+        try:
+            success = self.validate_credentials(username, password)
+            if success:
+                print("Login successful!")
+                self.login_window.destroy()
+                self.task_complete = True
+                messagebox.showinfo("Login Status", "Login successful!")
+                return True
+            else:
+                raise ValueError("Invalid username or password.")
+        except Exception as e:
+            print(f"Error: {e}")
+            messagebox.showerror("Login Status", str(e))
+
+    def open_signup_window(self):
+        """Opens the signup window."""
+        self.login_window.destroy()  # Properly close the current window
+        signupView = SignupView(self)
+
+    def validate_credentials(self, username, password):
+        """
+        Validates the username and password against a .txt file hosted remotely.
+        Each line in the file should have the format: username,hashed_password
+        """
+        # File path to the remote file
+        filepath = "/home/jillienne_lapid/passwords.txt"
+
+        try:
+            with open(FS_DIR, "r") as file:
+                credentials_data = file.readlines()
+
+            for line in credentials_data:
+                stored_username, stored_hashed_password = line.strip().split(",")
+                if username == stored_username:
+                    # Check if the entered password matches the stored hashed password
+                    if bcrypt.checkpw(password.encode(), stored_hashed_password.encode()):
+                        return True
+        except FileNotFoundError:
+            print(f"Credentials file not found at {filepath}")
+            messagebox.showerror("Error", "Credentials file not found.")
+        except ValueError:
+            print("Credentials file is not formatted correctly.")
+            messagebox.showerror("Error", "The credentials file is not formatted correctly.")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            messagebox.showerror("Error", f"An error occurred: {e}")
+
+        return False
+
+class SignupView(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.signup_window = ctk.CTkToplevel(parent)
+        self.signup_window.geometry("400x300")
+        self.signup_window.attributes("-topmost", True)
+        self.signup_window.resizable(False, False)
+        self.signup_window.title("Save Credentials")
+
+        self.signup_window.grid_columnconfigure(0, weight=1)
+
+        # Handle close button
+        self.signup_window.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        # Frame
+        self.frame = ctk.CTkFrame(self.signup_window, fg_color="transparent")
+        self.frame.grid(column=0, sticky="nsew")
+
+        # Title Label
+        self.title_label = ctk.CTkLabel(self.frame, text="Register Credentials", font=("Helvetica", 20))
+        self.title_label.grid(row=0, column=0, columnspan=2, pady=10)
+
+        # Username Label and Entry
+        self.username_label = ctk.CTkLabel(self.frame, text="Username:")
+        self.username_label.grid(row=1, column=0, padx=10, pady=5, sticky='e')
+
+        self.username_entry = ctk.CTkEntry(self.frame, placeholder_text="Enter your username")
+        self.username_entry.grid(row=1, column=1, padx=10, pady=5, sticky='w')
+
+        # Password Label and Entry
+        self.password_label = ctk.CTkLabel(self.frame, text="Password:")
+        self.password_label.grid(row=2, column=0, padx=10, pady=5, sticky='e')
+
+        self.password_entry = ctk.CTkEntry(self.frame, placeholder_text="Enter your password", show="*")
+        self.password_entry.grid(row=2, column=1, padx=10, pady=5, sticky='w')
+
+        # Save Button
+        self.save_button = ctk.CTkButton(self.frame, text="Save", command=self.save_credentials)
+        self.save_button.grid(row=3, column=0, columnspan=2, pady=10)
+
+    def save_credentials(self):
+        """
+        Saves the inputted username and hashed password to passwords.txt.
+        """
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+
+        if username and password:  # Ensure fields are not empty
+            # Ensures passwords are not safe in plain text on the credentials txt
+            hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+            credentials = f"{username},{hashed_password.decode()}\n"
+
+            # Ensure the file exists
+            filepath = "/home/jillienne_lapid/passwords.txt"
+
+            if not os.path.exists(FS_DIR):
+                open(FS_DIR, "w").close()
+
+            # Save the hashed password
+            with open(FS_DIR, "a") as file:
+                file.write(credentials)
+
+            print("Credentials saved securely!")
+            tk.messagebox.showinfo("Success", "Credentials saved securely!")
+            self.signup_window.destroy()
+            loginView = LoginView(self)
+
+        else:
+            print("Both fields must be filled.")
+            tk.messagebox.showerror("Error", "Both fields must be filled.")
+
+    def on_close(self):
+        """
+        Handles the close button (X) event.
+        """
+        self.signup_window.destroy()  # Close the current window

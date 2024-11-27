@@ -12,8 +12,10 @@ from datetime import datetime
 
 # host binds to local server ip
 # using localhost for testing purposes
-host = "10.128.0.3"
-port = 3389
+host = "localhost"
+port = 8000
+#host = "10.128.0.3"
+#port = 3389
 BUFFER_SIZE = 32786  # might need to play around with buffer sizes for size of files allowed
 dashes = '---->'
 FORMAT = 'utf-8'
@@ -75,6 +77,7 @@ class Server:
                 elif command == "END":
                     # Close the connection between the client and the server
                     connection.close()
+                    #self.close_server()
                     break
 
                 elif command == "GETFILES":
@@ -195,5 +198,4 @@ class Server:
 
 if __name__ == "__main__":
     server_socket = Server()
-
     server_socket.activate_server()

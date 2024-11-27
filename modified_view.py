@@ -102,4 +102,3 @@ if __name__ == "__main__":
     app = InitView()
     app.mainloop()
 
-
