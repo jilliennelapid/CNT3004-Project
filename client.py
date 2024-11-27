@@ -4,14 +4,15 @@ import socket
 import json
 import base64
 import threading
-
+import os
+from pathlib import Path
 # client and server should match port
 # using localhost for testing purposes
-host = "localhost"
-port = 8080
+host = "34.173.115.199"
+port = 3389
 
-BUFFER_SIZE = 1024
-FORMAT = "utf-8"
+BUFFER_SIZE = 32786
+FORMAT = 'utf-8'
 
 class Client:
     def __init__(self):
@@ -19,7 +20,7 @@ class Client:
 
         # Creates client-side TCP socket (SOCK_STREAM) for IPv4 (AF_INET)
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_mess = ""
+        self.start_time = None
 
     def set_controller(self, controller):
         self.controller = controller
@@ -44,19 +45,33 @@ class Client:
 
                     if "@" in response:
                         mess_type, payload = response.split("@")
-                        print(f"Server message received: {response}")
+                        print(payload)
 
                         if mess_type == "OK":
                             print("Connection test successful: Server responded with 'OK'")
-                            self.controller.statusFlag = True
-                            print(f"statusFlag is now: {self.controller.statusFlag}")
-                            print("updated statusflag")
-                            self.controller.flag_event.set()
+                            self.controller.send_sys_response(payload)
+
                         elif mess_type == "UPSTATS":
                             self.controller.send_upload_stats(payload)
-                            print("Sent upload stats to controller.")
+
                         elif mess_type == "DOWNSTATS":
                             self.controller.send_download_stats(payload)
+
+                        elif mess_type == "UPHIST":
+                            self.controller.send_upload_hist(payload)
+                            print("client received, sending to controller")
+
+                        elif mess_type == "DOWNHIST":
+                            self.controller.send_download_hist(payload)
+                            print("client received, sending to controller")
+
+                        elif mess_type == "FILERETURN":
+                            self.controller.set_files(payload)
+
+                        elif mess_type == "DOWNLOAD":
+                            # Handle file download
+                            self.receive_file(payload)
+
                         else:
                             print(f"Unknown message type: {mess_type}")
                     else:
@@ -70,14 +85,47 @@ class Client:
         listener_thread = threading.Thread(target=listen_to_server, daemon=True)
         listener_thread.start()
 
+    def receive_file(self, payload):
+        # Decode and parse JSON
+        decode_payload = json.loads(payload)
+
+        filename = decode_payload["filename"]
+        filedata = decode_payload["filedata"]
+        decode_filedata = base64.b64decode(filedata)
+
+        downloads_folder = os.path.join(Path.home(), "Downloads")
+        filepath = os.path.join(downloads_folder, filename)
+
+        # Ensure a unique filename if a file with the same name already exists
+        if os.path.exists(filepath):
+            base, ext = os.path.splitext(filename)
+            counter = 1
+            while os.path.exists(filepath):
+                filename = f"{base}({counter}){ext}"
+                filepath = os.path.join(downloads_folder, filename)
+                counter += 1
+
+        # Create directories if needed
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+
+        # Write the file data
+        with open(filepath, 'wb') as f:
+            f.write(decode_filedata)
+
+        print(f"File successfully saved to {filepath}")
+
     def test_connection(self):
         test_mess = {"command": "TEST"}
         self.client.send(json.dumps(test_mess).encode(FORMAT))
         return True
 
+    def request_files(self):
+        req_files_mess = {"command": "GETFILES"}
+        self.client.send(json.dumps(req_files_mess).encode(FORMAT))
+
     # Sends request to create folder up to the server
-    def request_create_folder(self, folderName):
-        create_fol_mess = {"command": "MKFOLDER", "filename": folderName}
+    def request_create_folder(self, folderpath):
+        create_fol_mess = {"command": "MKFOLDER", "folderpath": folderpath}
         self.client.send(json.dumps(create_fol_mess).encode(FORMAT))
 
     # Sends request to delete file up to the server.
@@ -101,6 +149,8 @@ class Client:
         # Sending the data as JSON over client socket
         print(f"Sending file {filename}")
         self.client.send(json.dumps(up_file_mess).encode(FORMAT))
+        print("Sending JSON:", json.dumps(up_file_mess))  # Verify the JSON structure being sent
+
 
     # Sends request for a file download up to the server.
     def request_download_file(self, filename):

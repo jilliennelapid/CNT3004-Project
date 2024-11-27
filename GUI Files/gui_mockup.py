@@ -3,9 +3,7 @@
 from view import View, InitView
 from controller import Controller
 
-import tkinter as tk
 import customtkinter as ctk
-import time
 
 class App(ctk.CTk):
     def __init__(self):
@@ -14,10 +12,6 @@ class App(ctk.CTk):
 
         # Sets the title of the main window
         self.title("Server File Share Application")
-
-        # Initializes instances of the Model, View, and Controller classes.
-        # Passes the model and view to the controller
-        # model = Model()
 
         view = View(self)
         self.controller = Controller(view)

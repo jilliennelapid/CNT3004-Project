@@ -12,7 +12,7 @@ def validate_credentials(username, password):
     Each line in the file should have the format: username,hashed_password
     """
     # URL to the remote file
-    url = "https://your-remote-repository.com/passwords.txt"  # Replace with actual URL
+    url = "/home/jillienne_lapid/passwords.txt"  # Replace with actual URL
 
     try:
         # Fetch the remote file
