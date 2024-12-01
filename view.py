@@ -401,7 +401,11 @@ class View(tk.Frame):
             # Assiting function that confirms the filepath of the folder to be created
             def confirm_file():
                 filepath = path.get()
-                baseFilepath = FILE_STORAGE_DIR + "/" + selected_file
+
+                if selected_file:
+                    baseFilepath = FILE_STORAGE_DIR + "/" + selected_file
+                else:
+                    baseFilepath = FILE_STORAGE_DIR
 
                 # Checks if the path of the folder already exists to prevent duplicate folders
                 if filepath == FILE_STORAGE_DIR or filepath == baseFilepath:
@@ -742,6 +746,8 @@ class LoginView(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
 
+        self.controller = None
+
         # Defines the attributes of the login window
         self.login_window = ctk.CTkToplevel(parent)
         self.login_window.geometry("320x200")
@@ -785,6 +791,9 @@ class LoginView(tk.Frame):
         # Bind the close button action to custom on_close() function
         self.login_window.protocol("WM_DELETE_WINDOW", self.on_close)
 
+    def set_controller(self, controller):
+        self.controller = controller
+
     # Function to override the close button action,
     # preventing the user from closing the window until an action is done
     def on_close(self):
@@ -799,10 +808,15 @@ class LoginView(tk.Frame):
         username = self.username_entry.get()
         password = self.password_entry.get()
 
+        self.controller.validate(username, password)
+        print("attempting to validate")
+        time.sleep(2)
+
         try:
-            success = self.validate_credentials(username, password)
+            success = self.controller.validation_result
+
             if success:
-                print("Login successful!")
+                print("Login Successful!")
                 self.login_window.destroy()
                 self.task_complete = True
                 messagebox.showinfo("Login Status", "Login successful!")
@@ -817,6 +831,7 @@ class LoginView(tk.Frame):
         """Opens the signup window."""
         self.login_window.destroy()  # Properly close the current window
         signupView = SignupView(self)
+        signupView.controller = self.controller
 
     def validate_credentials(self, username, password):
         """
@@ -825,24 +840,10 @@ class LoginView(tk.Frame):
         """
 
         try:
-            with open(PASSWORD_PATH, "r") as file:
-                credentials_data = file.readlines()
-
-            for line in credentials_data:
-                stored_username, stored_hashed_password = line.strip().split(",")
-                if username == stored_username:
-                    # Check if the entered password matches the stored hashed password
-                    if bcrypt.checkpw(password.encode(), stored_hashed_password.encode()):
-                        return True
-        except FileNotFoundError:
-            print(f"Credentials file not found at {PASSWORD_PATH}")
-            messagebox.showerror("Error", "Credentials file not found.")
-        except ValueError:
-            print("Credentials file is not formatted correctly.")
-            messagebox.showerror("Error", "The credentials file is not formatted correctly.")
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
-            messagebox.showerror("Error", f"An error occurred: {e}")
+            if self.controller.validate(username, password):
+                return True
+        except Exception:
+            print("Error")
 
         return False
 
@@ -852,6 +853,8 @@ class SignupView(tk.Frame):
 
     def __init__(self, parent):
         super().__init__(parent)
+
+        self.controller = None
 
         # Defines the attributes of the signup window
         self.signup_window = ctk.CTkToplevel(parent)
@@ -894,6 +897,9 @@ class SignupView(tk.Frame):
         # Bind the close button action to custom on_close() function
         self.signup_window.protocol("WM_DELETE_WINDOW", self.on_close)
 
+    def set_controller(self, controller):
+        self.controller = controller
+
     # Takes the inputted credentials, encrypts them, and saves them to a file
     def save_credentials(self):
         """
@@ -905,19 +911,17 @@ class SignupView(tk.Frame):
         if username and password:  # Ensure fields are not empty
             # Ensures passwords are not safe in plain text on the credentials txt
             hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
-            credentials = f"{username},{hashed_password.decode()}\n"
+            # credentials = f"{username},{hashed_password.decode()}\n"
 
-            if not os.path.exists(PASSWORD_PATH):
-                open(PASSWORD_PATH, "w").close()
+            self.controller.save_login(username, hashed_password)
+            time.sleep(2)
 
-            # Save the hashed password
-            with open(PASSWORD_PATH, "a") as file:
-                file.write(credentials)
-
-            print("Credentials saved securely!")
-            tk.messagebox.showinfo("Success", "Credentials saved securely!")
-            self.signup_window.destroy()
-            loginView = LoginView(self)
+            if self.controller.saved_result:
+                print("Credentials saved securely!")
+                tk.messagebox.showinfo("Success", "Credentials saved securely!")
+                self.signup_window.destroy()
+                loginView = LoginView(self)
+                loginView.controller = self.controller
 
         else:
             print("Both fields must be filled.")

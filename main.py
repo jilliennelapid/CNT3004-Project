@@ -27,6 +27,7 @@ class App(ctk.CTk):
 
         # Creates the window for login
         loginView = LoginView(self)
+        LoginView.set_controller(loginView, self.controller)
 
         # Handles the closing of the main window
         self.protocol("WM_DELETE_WINDOW", self.on_close)

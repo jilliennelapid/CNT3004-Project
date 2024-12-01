@@ -8,14 +8,12 @@ import time
 import threading
 import base64
 import shutil
+import bcrypt
 from datetime import datetime
 
 # Host and Port that Server Binds to
-#host = "10.128.0.3"
-#port = 3389
-
-host = "localhost"
-port = 8000
+host = "10.128.0.3"
+port = 3389
 
 BUFFER_SIZE = 32786
 dashes = '---->'
@@ -23,6 +21,7 @@ FORMAT = 'utf-8'
 
 # Server path will be created in google cloud VM instance.
 FILE_STORAGE_DIR = os.path.expanduser("~/server_files")
+PASSWORD_PATH = "/home/jillienne_lapid/passwords.txt"
 
 threads = []
 
@@ -48,8 +47,10 @@ class Server:
         while True:
             conn, addr = self.server.accept()
 
-            with conn:
-                self.decode_client(conn)
+            # Threading to handle multiple client server request
+            t = threading.Thread(target=self.decode_client, args=(conn,))
+            t.start()
+            threads.append(t)
 
     # Decodes the Request Messages sent from the Client
     def decode_client(self, connection):
@@ -85,6 +86,41 @@ class Server:
                     connection.close()
                     self.close_server()
                     break
+
+                elif command == "VALIDATE":
+                    username = decode_mess["username"]
+                    password = decode_mess["password"]
+
+                    with open(PASSWORD_PATH, "r") as file:
+                        credentials_data = file.readlines()
+
+                    for line in credentials_data:
+                        stored_username, stored_hashed_password = line.strip().split(",")
+                        if username == stored_username:
+                            # Check if the entered password matches the stored hashed password
+                            if bcrypt.checkpw(password.encode(), stored_hashed_password.encode()):
+                                connection.send(f"VALIDATE@{True}".encode(FORMAT))
+                                break
+
+                    connection.send(f"VALIDATE@{True}".encode(FORMAT))
+
+                elif command == "SAVE":
+                    username = decode_mess["username"]
+                    hashed_password = decode_mess["password"]
+
+                    password = base64.b64decode(hashed_password)
+
+                    credentials = f"{username},{password.decode()}\n"
+
+                    if not os.path.exists(PASSWORD_PATH):
+                        open(PASSWORD_PATH, "w").close()
+
+                    # Save the hashed password
+                    with open(PASSWORD_PATH, "a") as file:
+                        file.write(credentials)
+
+                    print("Credentials saved securely!")
+                    connection.send(f"SAVE@{True}".encode(FORMAT))
 
                 # Sends back the information of files on the server
                 elif command == "GETFILES":

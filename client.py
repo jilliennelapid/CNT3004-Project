@@ -8,11 +8,8 @@ import os
 from pathlib import Path
 
 # Host and Port that Client connects to
-#host = "104.198.79.20"
-#port = 3389
-
-host = "localhost"
-port = 8000
+host = "35.192.202.15"
+port = 3389
 
 BUFFER_SIZE = 32786
 FORMAT = 'utf-8'
@@ -83,6 +80,12 @@ class Client:
                         # FILERETURN for server file data being sent back to the GUI
                         elif mess_type == "FILERETURN":
                             self.controller.set_files(payload)
+
+                        elif mess_type == "VALIDATE":
+                            self.controller.set_validation(payload)
+
+                        elif mess_type == "SAVE":
+                            self.controller.set_saved(payload)
 
                         else:
                             print(f"Unknown message type: {mess_type}")
@@ -180,6 +183,17 @@ class Client:
         create_fol_mess = {"command": "MKFOLDER", "folderpath": folderpath}
         self.client.send(json.dumps(create_fol_mess).encode(FORMAT))
 
+    def request_login_check(self, username, password):
+        login_mess = {"command": "VALIDATE", "username": username, "password": password}
+        self.client.send(json.dumps(login_mess).encode(FORMAT))
+        print("client sending validate request to server")
+
+    def request_save_login(self, username, password):
+        # Encode the password to base64 for sending as JSON
+        b64_password = base64.b64encode(password).decode('utf-8')
+
+        save_mess = {"command": "SAVE", "username": username, "password": b64_password}
+        self.client.send(json.dumps(save_mess).encode(FORMAT))
 
     """ Methods for Handling Gracefully Closing the Program """
     # Closes the Client Socket

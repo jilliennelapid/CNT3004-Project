@@ -11,8 +11,10 @@ class Controller:
         self.client.set_controller(self)
         self.view = _view
 
-        self.statusFlag = None      # Flag for checking server connection
-        self.sys_res_time = None    # Flag for setting system response time
+        self.statusFlag = None          # Flag for checking server connection
+        self.sys_res_time = None        # Flag for setting system response time
+        self.validation_result = None   # Flag for setting the result of the password validation
+        self.saved_result = None
 
 
     """ Main Functionality Methods """
@@ -51,6 +53,12 @@ class Controller:
     def makedir(self, _filepath):
         self.client.request_create_folder(_filepath)
 
+    def validate(self, _username, _password):
+        self.client.request_login_check(_username, _password)
+        print("controller sending validate request to client")
+
+    def save_login(self, _username, _password):
+        self.client.request_save_login(_username, _password)
 
     """ Methods for Sending Data back to the GUI """
     # Sends back the system response time to the GUI
@@ -88,3 +96,11 @@ class Controller:
     def set_files(self, files):
         if self.client:
             self.view.return_files(files)
+
+    def set_validation(self, result):
+        if self.client:
+            self.validation_result = result
+
+    def set_saved(self, result):
+        if self.client:
+            self.saved_result = result
