@@ -15,7 +15,7 @@ class App(ctk.CTk):
 
         # Initializes the controller
         self.controller = Controller(view)
-
+        # Sets the controller of the view
         View.set_controller(view, self.controller)
 
         # Creates window to do the server connection

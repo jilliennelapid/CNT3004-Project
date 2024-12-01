@@ -10,13 +10,14 @@ import base64
 import shutil
 from datetime import datetime
 
-# host binds to local server ip
-# using localhost for testing purposes
-host = "localhost"
-port = 8000
+# Host and Port that Server Binds to
 #host = "10.128.0.3"
 #port = 3389
-BUFFER_SIZE = 32786  # might need to play around with buffer sizes for size of files allowed
+
+host = "localhost"
+port = 8000
+
+BUFFER_SIZE = 32786
 dashes = '---->'
 FORMAT = 'utf-8'
 
@@ -25,67 +26,74 @@ FILE_STORAGE_DIR = os.path.expanduser("~/server_files")
 
 threads = []
 
+# Class Server that handles server-side actions and data handling
 class Server:
     def __init__(self):
         # Creates server-side TCP socket (SOCK_STREAM) with IPv4 (AF_INET)
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+    # Activates the server by binding the server to the VM instance IP address and given port
     def activate_server(self):
         try:
             # Try to bind host to the given host address and port number.
             self.server.bind((host, port))
-            print("Bind Success")
+            print("Server Bind Success!")
         except socket.error:
             return False
 
-        # After successfully binding server, allow server to listen for messages.
+        # After successfully binding server, allow server to listen for messages (up to 6)
         self.server.listen(6)
 
         # Server will continuously accept messages until program ends
         while True:
             conn, addr = self.server.accept()
 
-            # with multithreating, call decode_client
             with conn:
                 self.decode_client(conn)
 
+    # Decodes the Request Messages sent from the Client
     def decode_client(self, connection):
         while True:
             try:
                 # Receive command message on server side
                 command_mess = connection.recv(BUFFER_SIZE)
-                print(f"Raw data received: {command_mess}")  # Inspect the raw bytes received
 
                 # Decode and parse JSON
                 decode_mess = json.loads(command_mess.decode(FORMAT))
-                print(f"message: {decode_mess}")
 
+                # Get the desired command out of the JSON message
                 command = decode_mess["command"]
 
-                print(f"reached here with command: {command}.")
+                # If a file name is provided, save that data
                 try:
                     filename = decode_mess["filename"]
                 except KeyError:
                     filename = ""
 
+                # Sends a success message to show a good connection between client and server
                 if command == "TEST":
-                    start_time = time.time()  # added for server response time
-                    response_time = round((time.time() - start_time), 6)  # added for server response time
+                    # Calculates the Server's Response Time
+                    start_time = time.time()
+                    response_time = round((time.time() - start_time), 8)
 
+                    # Sends back an OK message to the client
                     connection.send(f"OK@{response_time}".encode(FORMAT))
 
+                # Closes the connection and the Server
                 elif command == "END":
                     # Close the connection between the client and the server
                     connection.close()
-                    #self.close_server()
+                    self.close_server()
                     break
 
+                # Sends back the information of files on the server
                 elif command == "GETFILES":
                     files = os.listdir(FILE_STORAGE_DIR)
                     # Send file list as JSON
                     json_files = json.dumps(files)
                     threading.Thread(target= lambda: connection.send(f"FILERETURN@{json_files}".encode('utf-8')), daemon=True).start()
 
+                # Writes files to the file storage
                 elif command == "UPLOAD":
                     start_time = time.time()  # added for upload data rate
                     filedata = decode_mess["filedata"]
@@ -113,14 +121,15 @@ class Server:
                     threading.Thread(target=lambda: connection.send(f"UPSTATS@{converted_stats}".encode(FORMAT)),
                                      daemon=True).start()
 
-                    history_stats = {"filename": filename, "stime": readable_start_time.strftime('%Y-%m-%d %H:%M:%S'), "ctime": readable_end_time.strftime('%Y-%m-%d %H:%M:%S'), "status": "✅"}
+                    history_stats = {"filename": filename, "stime": readable_start_time.strftime('%Y-%m-%d %H:%M:%S'),
+                                     "ctime": readable_end_time.strftime('%Y-%m-%d %H:%M:%S'), "status": "✅"}
                     converted_hist = json.dumps(history_stats)
                     threading.Thread(target=lambda: connection.send(f"UPHIST@{converted_hist}".encode(FORMAT)),
                                      daemon=True).start()
 
-
+                # Gets file data and sends the data back to the client
                 elif command == "DOWNLOAD":
-                    start_time = time.time()  # added for download data rate
+                    start_time = time.time()
                     filepath = os.path.join(FILE_STORAGE_DIR, filename)
 
                     if not os.path.exists(filepath):
@@ -156,11 +165,13 @@ class Server:
 
                     time.sleep(1)
 
-                    history_stats = {"filename": filename, "stime": readable_start_time.strftime('%Y-%m-%d %H:%M:%S'), "ctime": readable_end_time.strftime('%Y-%m-%d %H:%M:%S'), "status": "✅"}
+                    history_stats = {"filename": filename, "stime": readable_start_time.strftime('%Y-%m-%d %H:%M:%S'),
+                                     "ctime": readable_end_time.strftime('%Y-%m-%d %H:%M:%S'), "status": "✅"}
                     converted_hist = json.dumps(history_stats)
                     threading.Thread(target=lambda: connection.send(f"DOWNHIST@{converted_hist}".encode(FORMAT)),
                                      daemon=True).start()
 
+                # Removes a file from the file storage
                 elif command == "DELETE":
                     filepath = os.path.join(FILE_STORAGE_DIR, filename)
 
@@ -178,24 +189,28 @@ class Server:
                     else:
                         print(f"Path '{filepath}' does not exist.")
 
+                # Creates a new directory in the file storage
                 elif command == "MKFOLDER":
                     folderpath = decode_mess["folderpath"]
 
-                    # need to add handling overwriting files
                     try:
                         os.makedirs(folderpath, exist_ok=False)
                     except FileExistsError as e:
                         # exception for existing file
-                        connection.send(e)
+                        connection.send(f"ERROR@Another Folder already exists at the location with that name!")
+
+            # Handles an erroneous client message
             except Exception as e:
                 print(f"{dashes} Error processing client message: {e}")
                 connection.send(f"ERROR: {e}".encode(FORMAT))
                 break
 
+    # Closes the Server socket
     def close_server(self):
         self.server.close()
 
 
 if __name__ == "__main__":
+    # Initializes the server upon running the code
     server_socket = Server()
     server_socket.activate_server()
