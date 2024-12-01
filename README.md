@@ -24,5 +24,5 @@ To test on Google Cloud:
 13) In `view.py` in the method `validate_credentials()` in the class `LoginView`, update `filepath` to the path of `passwords.txt`.\
 > use command `realpath passwords.txt` to get the exact path; copy it and assign the value to `filepath`
 14) Start the server with the command `python3 server.py`.
-15) Start the program by running `gui_mockup.py`.
+15) Start the program by running `main.py`.
 16) When finished, Stop your VM instance to avoid extra billing.
